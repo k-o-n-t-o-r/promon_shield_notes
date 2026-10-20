@@ -1,0 +1,262 @@
+diff --git a/__init__.py b/__init__.py
+index c20c502..4a35db1 100644
+--- a/__init__.py
++++ b/__init__.py
+@@ -1,5 +1,6 @@
+ import json
+-from binaryninja import PluginCommand, Workflow, Activity
++from pathlib import Path
++from binaryninja import PluginCommand, Workflow, Activity, Settings
+ from .mikuWorkflow import (
+     workflow_patch_llil,
+     workflow_patch_mlil,
+@@ -7,7 +8,7 @@ from .mikuWorkflow import (
+     workflow_patch_mlil_switch,
+     workflow_patch_mlil_auto,
+ )
+-from .utils import log_info
++from .utils import log_error, log_info
+ from .fix_binaryninja_api import lowlevelil  # noqa: F401
+ from .fix_binaryninja_api import mediumlevelil  # noqa: F401
+
+@@ -107,6 +108,146 @@ def register_commands():
+     PluginCommand.register_for_function(
+         "miku\\suggest_stateVar ", "", suggest_stateVar, isV
+     )
++    PluginCommand.register_for_function(
++        "miku\\deflate_auto",
++        "Use the Miku CFF workflow on this function, preferring switch "
++        "synthesis and falling back to hard deflattening",
++        deflate_auto,
++        isV,
++    )
++    PluginCommand.register_for_function(
++        "miku\\export_cff_graph",
++        "Export the inferred state-to-real-block graph without changing IL",
++        export_cff_graph,
++        isV,
++    )
++
++
++def deflate_auto(bv, func):
++    """Select the custom workflow and enable its automatic CFF activity.
++
++    Binary Ninja 6 no longer exposes the per-activity selector in the Function
++    Settings context menu used by the original README. Keep the same operation
++    available as an ordinary function plugin command.
++    """
++    Settings().set_string(
++        "analysis.workflows.functionWorkflow", "MikuCffHelper_workflow", func
++    )
++    workflow = Workflow("MikuCffHelper_workflow", object_handle=func.handle)
++    workflow._machine.override_set("analysis.plugins.workflow_patch_mlil", False)
++    workflow._machine.override_set(
++        "analysis.plugins.workflow_patch_mlil_switch", False
++    )
++    workflow._machine.override_set(
++        "analysis.plugins.workflow_patch_mlil_auto", True
++    )
++    func.reanalyze()
++    log_info(f"Requested auto CFF deflattening: {func.name} @ {func.start:#x}")
++
++
++def export_cff_graph(bv, func):
++    """Export Miku's non-mutating CFF analysis as JSON for external review."""
++    from .passes.mid.deflatHardPass import (
++        _collect_side_effect_signatures,
++        _collect_state_vars,
++        _detect_dispatcher_entry,
++        _function_looks_like_cff,
++        _identify_dispatcher_subgraph,
++        build_real_block_transition_graph,
++    )
++    from .passes.mid.synthesizeSwitchPass import (
++        _candidate_state_vars_ranked,
++        _collect_dispatcher_case_values,
++        _collect_transitions_for_var,
++    )
++
++    mlil = func.mlil
++    if mlil is None:
++        log_error(f"No MLIL for {func.name}")
++        return
++    dispatcher = _detect_dispatcher_entry(mlil)
++    if dispatcher is None:
++        log_error(f"No dispatcher for {func.name}")
++        return
++    state_vars = _collect_state_vars(mlil, dispatcher)
++    dispatcher_blocks = _identify_dispatcher_subgraph(
++        mlil, dispatcher, state_vars
++    )
++
++    def address(index):
++        try:
++            return mlil[index].address
++        except Exception:
++            return 0
++
++    candidates = []
++    for variable in _candidate_state_vars_ranked(mlil, state_vars):
++        transitions, assigned, fully_resolved = _collect_transitions_for_var(
++            mlil,
++            variable,
++            state_vars,
++            dispatcher_blocks,
++            dispatcher.start,
++            float("inf"),
++        )
++        case_values = _collect_dispatcher_case_values(
++            mlil, dispatcher_blocks, variable
++        )
++        candidates.append(
++            {
++                "name": variable.name,
++                "identifier": variable.identifier,
++                "transitions": {
++                    f"0x{value:x}": {
++                        "mlil_index": target,
++                        "address": f"0x{address(target):x}",
++                    }
++                    for value, target in sorted(transitions.items())
++                },
++                "assigned_values": [
++                    f"0x{value:x}" for value in sorted(assigned)
++                ],
++                "case_values": [
++                    f"0x{value:x}" for value in sorted(case_values)
++                ],
++                "fully_resolved": fully_resolved,
++            }
++        )
++
++    real_graph = build_real_block_transition_graph(mlil)
++    output = {
++        "function": func.name,
++        "start": f"0x{func.start:x}",
++        "looks_like_cff": _function_looks_like_cff(mlil, state_vars),
++        "dispatcher": {
++            "mlil_index": dispatcher.start,
++            "address": f"0x{address(dispatcher.start):x}",
++        },
++        "dispatcher_blocks": [
++            {
++                "mlil_index": index,
++                "address": f"0x{address(index):x}",
++            }
++            for index in sorted(dispatcher_blocks)
++        ],
++        "candidates": candidates,
++        "real_block_graph": {
++            f"0x{address(source):x}": [
++                f"0x{address(target):x}" for target in sorted(targets)
++            ]
++            for source, targets in sorted(real_graph.items())
++        },
++        "side_effects": [
++            {"operation": operation, "address": f"0x{location:x}"}
++            for operation, location in sorted(
++                _collect_side_effect_signatures(mlil),
++                key=lambda item: item[1],
++            )
++        ],
++    }
++    path = Path(f"/tmp/miku-cff-{func.start:x}.json")
++    path.write_text(json.dumps(output, indent=2) + "\n")
++    log_info(f"Exported CFF graph: {path}")
+
+
+ register_workflow()
+diff --git a/passes/mid/deflatHardPass.py b/passes/mid/deflatHardPass.py
+index 02ab4bd..2a54718 100644
+--- a/passes/mid/deflatHardPass.py
++++ b/passes/mid/deflatHardPass.py
+@@ -303,6 +303,30 @@ def _collect_state_vars(
+             if tgt is not None:
+                 queue.append(tgt)
+
++    # BN commonly introduces a dispatcher-local alias:
++    #
++    #     dispatch_value = primary_state
++    #     if (dispatch_value == K) ...
++    #
++    # The compared alias has no constant assignments, while primary_state has
++    # all of them. Walk such copies backwards before applying the unique-value
++    # filter, then retain both ends of a qualifying alias chain. Without this,
++    # the real outer state in a protected sample was missed and an unrelated
++    # nested state variable was selected, causing a call to disappear.
++    changed = True
++    while changed:
++        changed = False
++        for instr in mlil.instructions:
++            if (
++                not isinstance(instr, MediumLevelILSetVar)
++                or instr.dest not in candidates
++                or not isinstance(instr.src, MediumLevelILVar)
++                or instr.src.src in candidates
++            ):
++                continue
++            candidates.add(instr.src.src)
++            changed = True
++
+     unique_vals: Dict[Variable, Set[int]] = {var: set() for var in candidates}
+     for instr in mlil.instructions:
+         if not isinstance(instr, MediumLevelILSetVar):
+@@ -311,7 +335,24 @@ def _collect_state_vars(
+             continue
+         if isinstance(instr.src, MediumLevelILConst):
+             unique_vals[instr.dest].add(instr.src.constant & _mask(instr.size or 4))
+-    return {v for v, s in unique_vals.items() if len(s) >= 2}
++    qualified = {v for v, s in unique_vals.items() if len(s) >= 2}
++    changed = True
++    while changed:
++        changed = False
++        for instr in mlil.instructions:
++            if (
++                not isinstance(instr, MediumLevelILSetVar)
++                or not isinstance(instr.src, MediumLevelILVar)
++            ):
++                continue
++            source = instr.src.src
++            if instr.dest in qualified and source in candidates and source not in qualified:
++                qualified.add(source)
++                changed = True
++            if source in qualified and instr.dest in candidates and instr.dest not in qualified:
++                qualified.add(instr.dest)
++                changed = True
++    return qualified
+
+
+ def _function_looks_like_cff(
+diff --git a/passes/mid/synthesizeSwitchPass.py b/passes/mid/synthesizeSwitchPass.py
+index c72bafd..29aa1d7 100644
+--- a/passes/mid/synthesizeSwitchPass.py
++++ b/passes/mid/synthesizeSwitchPass.py
+@@ -62,7 +62,10 @@ from ...utils import log_info, log_warn  # noqa: E402
+
+ _TIME_BUDGET_SECONDS = 15.0
+ _MIN_TRANSITIONS = 2
+-_MAX_SWITCH_ITERS = 8  # 嵌套 dispatcher 最多重构 8 层（实测 sub_407368 有 3+ 层）
++# Process one dispatcher per explicit user action. Nested automatic rewrites
++# are difficult to roll back if the side-effect verifier fails; a protected
++# sample demonstrated a real lost call on the second rewrite.
++_MAX_SWITCH_ITERS = 1
+
+
+ def _vars_aliased_to(
+diff --git a/utils/__init__.py b/utils/__init__.py
+index 100b644..0889560 100644
+--- a/utils/__init__.py
++++ b/utils/__init__.py
+@@ -8,12 +8,10 @@ from .instruction_analyzer import (
+     InstructionAnalyzer,
+     unsigned_to_signed_32bit,
+ )
+-from .instr_vistor import SimpleVisitor
+ from .mikuPlugin import suggest_stateVar, log_info, log_warn, log_error
+
+ __all__ = [
+     "CFGAnalyzer",
+-    "SimpleVisitor",
+     "StateMachine",
+     "InstructionAnalyzer",
+     "suggest_stateVar",

@@ -1,0 +1,40 @@
+{
+  "format": 1,
+  "slide": "0x400000",
+  "types": [
+    "typedef struct { unsigned char initialized; unsigned char bytes[32]; } shield_secret32;",
+    "typedef struct { unsigned long long back_offset; unsigned long long length; unsigned char key_mask[32]; } shield_region_descriptor;"
+  ],
+  "functions": [
+    {
+      "address": "0x1000",
+      "name": "shield_fletcher64_words",
+      "prototype": "unsigned long long shield_fletcher64_words(const unsigned int *words, unsigned long long count)",
+      "comment": "Example only; replace the address in a private annotation file."
+    },
+    {
+      "address": "0x2000",
+      "name": "shield_chacha8_xor",
+      "prototype": "void shield_chacha8_xor(void *output, const void *input, unsigned long long length, const unsigned char *nonce, const unsigned char *key)"
+    }
+  ],
+  "data_symbols": [
+    {
+      "address": "0x3000",
+      "name": "shield_region_descriptors"
+    }
+  ],
+  "comments": [
+    {
+      "function": "0x1000",
+      "address": "0x1010",
+      "text": "Example function-local annotation."
+    }
+  ],
+  "global_comments": [
+    {
+      "address": "0x3000",
+      "text": "Example descriptor table."
+    }
+  ]
+}

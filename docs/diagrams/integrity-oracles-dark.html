@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHIELD integrity evidence and correlation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--paper:#1d2021;--paper-2:#282828;--ink:#ebdbb2;--muted:#bdae93;--soft:#a89984;--accent:#b8bb26;--link:#83a598;--sans:'Geist',system-ui,sans-serif;--serif:'Instrument Serif',serif;--mono:'Geist Mono',ui-monospace,monospace}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:3rem 2rem;background:var(--paper);color:var(--ink);font-family:var(--sans)}
+    .frame{width:100%;max-width:1280px;min-width:0}.diagram-container{width:100%;overflow-x:auto}
+    .eyebrow{margin-bottom:.5rem;color:var(--muted);font:500 .66rem var(--mono);letter-spacing:.18em;text-transform:uppercase}
+    h1{margin-bottom:1.5rem;color:var(--ink);font:400 clamp(1.5rem,2.4vw + .75rem,2rem)/1.15 var(--serif);letter-spacing:-.02em}
+    svg{display:block;width:100%;min-width:1280px}.zone{fill:var(--soft);font:500 8px var(--mono);letter-spacing:.14em;text-anchor:middle}.tag{fill:var(--muted);font:500 8px var(--mono);text-anchor:middle}
+    .name{fill:var(--ink);font:600 12px var(--sans);text-anchor:middle}.sub{fill:var(--muted);font:400 9px var(--mono);text-anchor:middle}.edge{fill:var(--soft);font:400 8px var(--mono);letter-spacing:.05em;text-anchor:middle}
+    .legend-label{fill:var(--muted);font:500 8px var(--mono);letter-spacing:.16em}.legend-text{fill:var(--muted);font:400 9px var(--sans)}
+    @media print{.diagram-container{overflow-x:visible}svg{min-width:0}}
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Architecture · Integrity evidence</p>
+    <h1>SHIELD correlates several views of the same process</h1>
+    <div class="diagram-container">
+      <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="integrity-oracles-dark-title integrity-oracles-dark-desc">
+        <title id="integrity-oracles-dark-title">SHIELD integrity evidence and correlation</title>
+        <desc id="integrity-oracles-dark-desc">Architecture showing process maps, reference ELF metadata, dynamic linker results, object classification, and live code pages feeding address correlation and live-versus-file scanning before detector workers select a verdict.</desc>
+        <defs>
+          <marker id="integrity-oracles-dark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#bdae93"/></marker>
+          <marker id="integrity-oracles-dark-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#b8bb26"/></marker>
+        </defs>
+        <rect width="1280" height="720" fill="#1d2021"/>
+
+        <!-- Zones -->
+        <rect x="40" y="80" width="520" height="520" rx="8" fill="rgba(235,219,178,.02)" stroke="rgba(235,219,178,.14)"/>
+        <rect x="600" y="80" width="360" height="520" rx="8" fill="rgba(184,187,38,.018)" stroke="rgba(184,187,38,.20)"/>
+        <rect x="1000" y="80" width="240" height="520" rx="8" fill="rgba(251,73,52,.018)" stroke="rgba(251,73,52,.24)"/>
+        <rect x="204" y="84" width="192" height="16" rx="2" fill="#1d2021"/><text x="300" y="96" class="zone">EVIDENCE SOURCES</text>
+        <rect x="708" y="84" width="144" height="16" rx="2" fill="#1d2021"/><text x="780" y="96" class="zone">CORRELATION</text>
+        <rect x="1060" y="84" width="120" height="16" rx="2" fill="#1d2021"/><text x="1120" y="96" class="zone">ENFORCEMENT</text>
+
+        <!-- Evidence paths -->
+        <path d="M280 144 H560 Q568 144 568 152 V192 Q568 200 576 200 H640" fill="none" stroke="#bdae93" marker-end="url(#integrity-oracles-dark-arrow)"/>
+        <path d="M280 248 H536 Q544 248 544 240 V220 Q544 212 552 212 H640" fill="none" stroke="#bdae93" marker-end="url(#integrity-oracles-dark-arrow)"/>
+        <path d="M280 352 H520 Q528 352 528 344 V240 Q528 232 536 232 H640" fill="none" stroke="#bdae93" marker-end="url(#integrity-oracles-dark-arrow)"/>
+        <path d="M280 456 H504 Q512 456 512 448 V268 Q512 260 520 260 H640" fill="none" stroke="#bdae93" marker-end="url(#integrity-oracles-dark-arrow)"/>
+
+        <path d="M280 272 H472 Q480 272 480 280 V436 Q480 444 488 444 H640" fill="none" stroke="#bdae93" stroke-dasharray="5,4" marker-end="url(#integrity-oracles-dark-arrow)"/>
+        <path d="M520 468 H568 Q576 468 576 460 V420 Q576 412 584 412 H640" fill="none" stroke="#bdae93" marker-end="url(#integrity-oracles-dark-arrow)"/>
+
+        <path d="M920 240 H968 Q976 240 976 248 V296 Q976 304 984 304 H1020" fill="none" stroke="#b8bb26" stroke-width="1.3" marker-end="url(#integrity-oracles-dark-arrow-accent)"/>
+        <path d="M920 436 H944 Q952 436 952 428 V328 Q952 320 960 320 H1020" fill="none" stroke="#b8bb26" stroke-width="1.3" marker-end="url(#integrity-oracles-dark-arrow-accent)"/>
+        <line x1="1120" y1="372" x2="1120" y2="460" stroke="#fb4934" stroke-width="1.3" marker-end="url(#integrity-oracles-dark-arrow)"/>
+
+        <!-- Path labels -->
+        <rect x="440" y="124" width="72" height="12" rx="2" fill="#1d2021"/><text x="476" y="133" class="edge">VMA VIEW</text>
+        <rect x="424" y="228" width="80" height="12" rx="2" fill="#1d2021"/><text x="464" y="237" class="edge">ELF NAMES</text>
+        <rect x="408" y="332" width="80" height="12" rx="2" fill="#1d2021"/><text x="448" y="341" class="edge">API PTRS</text>
+        <rect x="392" y="436" width="88" height="12" rx="2" fill="#1d2021"/><text x="436" y="445" class="edge">OWNERSHIP</text>
+        <rect x="488" y="376" width="80" height="12" rx="2" fill="#1d2021"/><text x="528" y="385" class="edge">FILE BYTES</text>
+        <rect x="536" y="448" width="80" height="12" rx="2" fill="#1d2021"/><text x="576" y="457" class="edge">LIVE BYTES</text>
+        <rect x="928" y="220" width="72" height="12" rx="2" fill="#1d2021"/><text x="964" y="229" class="edge" fill="#b8bb26">ADDRESS</text>
+        <rect x="920" y="408" width="80" height="12" rx="2" fill="#1d2021"/><text x="960" y="417" class="edge" fill="#b8bb26">MISMATCH</text>
+        <rect x="1136" y="404" width="64" height="12" rx="2" fill="#1d2021"/><text x="1168" y="413" class="edge" fill="#fb4934">FIRST WINS</text>
+
+        <!-- Source nodes -->
+        <rect x="80" y="112" width="200" height="64" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/><rect x="88" y="120" width="40" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="108" y="130" class="tag">MAPS</text><text x="180" y="150" class="name">Process mappings</text><text x="180" y="166" class="sub">paths · ranges · permissions</text>
+        <rect x="80" y="216" width="200" height="64" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/><rect x="88" y="224" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="106" y="234" class="tag">ELF</text><text x="180" y="254" class="name">Reference ELF metadata</text><text x="180" y="270" class="sub">dynsym · dynstr · sections</text>
+        <rect x="80" y="320" width="200" height="64" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/><rect x="88" y="328" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="106" y="338" class="tag">SYM</text><text x="180" y="358" class="name">Resolver + relocations</text><text x="180" y="374" class="sub">dlsym · GOT · imported slots</text>
+        <rect x="80" y="424" width="200" height="64" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/><rect x="88" y="432" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="106" y="442" class="tag">OBJ</text><text x="180" y="462" class="name">Object classification</text><text x="180" y="478" class="sub">dladdr · phdr · load bias</text>
+        <rect x="320" y="424" width="200" height="88" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/><rect x="328" y="432" width="40" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="348" y="442" class="tag">CODE</text><text x="420" y="464" class="name">Live executable pages</text><text x="420" y="482" class="sub">prologues · regions · ART</text><text x="420" y="498" class="sub">current page protections</text>
+
+        <!-- Correlation nodes -->
+        <rect x="640" y="160" width="280" height="120" rx="6" fill="rgba(184,187,38,.10)" stroke="#b8bb26"/><rect x="648" y="168" width="44" height="14" rx="2" fill="none" stroke="rgba(184,187,38,.58)"/><text x="670" y="178" class="tag" fill="#b8bb26">MODEL</text><text x="780" y="206" class="name">Address-model correlator</text><text x="780" y="226" class="sub">maps ↔ linker results ↔ relocations</text><text x="780" y="244" class="sub">real object vs claimed object</text><text x="780" y="262" class="sub">foreign mappings · redirected APIs</text>
+        <rect x="640" y="380" width="280" height="112" rx="6" fill="#282828" stroke="rgba(235,219,178,.36)"/><rect x="648" y="388" width="44" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.34)"/><text x="670" y="398" class="tag">SCAN</text><text x="780" y="426" class="name">Live-vs-file comparator</text><text x="780" y="446" class="sub">exact seek/read · optional force RX</text><text x="780" y="464" class="sub">5-byte spots · 12-byte spots</text><text x="780" y="480" class="sub">4,095-byte overlapping windows</text>
+
+        <!-- Enforcement nodes -->
+        <rect x="1020" y="260" width="200" height="112" rx="6" fill="rgba(184,187,38,.10)" stroke="#b8bb26"/><rect x="1028" y="268" width="36" height="14" rx="2" fill="none" stroke="rgba(184,187,38,.58)"/><text x="1046" y="278" class="tag" fill="#b8bb26">DET</text><text x="1120" y="306" class="name">Detector workers</text><text x="1120" y="326" class="sub">parallel policy checks</text><text x="1120" y="344" class="sub">reason-class race</text><text x="1120" y="360" class="sub">first completed violation</text>
+        <rect x="1020" y="460" width="200" height="72" rx="20" fill="rgba(251,73,52,.07)" stroke="rgba(251,73,52,.70)"/><text x="1120" y="492" class="name">Verdict + poison</text><text x="1120" y="512" class="sub">disable services · report · kill</text>
+
+        <line x1="40" y1="640" x2="1240" y2="640" stroke="rgba(235,219,178,.14)"/>
+        <text x="40" y="662" class="legend-label">LEGEND</text>
+        <rect x="136" y="650" width="18" height="12" rx="2" fill="#282828" stroke="rgba(235,219,178,.34)"/><text x="164" y="660" class="legend-text">Evidence source</text>
+        <rect x="328" y="650" width="18" height="12" rx="2" fill="rgba(184,187,38,.10)" stroke="#b8bb26"/><text x="356" y="660" class="legend-text">Correlation / decision</text>
+        <line x1="584" y1="656" x2="616" y2="656" stroke="#bdae93" marker-end="url(#integrity-oracles-dark-arrow)"/><text x="628" y="660" class="legend-text">Observed value</text>
+        <line x1="792" y1="656" x2="824" y2="656" stroke="#bdae93" stroke-dasharray="5,4" marker-end="url(#integrity-oracles-dark-arrow)"/><text x="836" y="660" class="legend-text">Backing bytes</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

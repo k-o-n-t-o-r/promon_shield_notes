@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1280 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="unpacking-pipeline-dark-title unpacking-pipeline-dark-desc" id="unpacking-pipeline-dark-root">
+        <title id="unpacking-pipeline-dark-title">From encrypted ELF to reviewable SHIELD code</title>
+        <desc id="unpacking-pipeline-dark-desc">Role-scoped data flow showing an original ELF and private exact-build profile passing through a hash gate, checksum-derived ChaCha8 recovery, EH-frame symbolization, and Binary Ninja review, with an optional runtime image used only as a byte oracle.</desc>
+        <defs>
+      <style>#unpacking-pipeline-dark-root { --paper: #1d2021;
+      --paper-2: #282828;
+      --ink: #ebdbb2;
+      --muted: #bdae93;
+      --soft: #a89984;
+      --rule: rgba(235,219,178,0.14);
+      --accent: #b8bb26;
+      --accent-tint: rgba(184,187,38,0.12);
+      --link: #83a598;
+      --sans: 'Geist', system-ui, sans-serif;
+      --serif: 'Instrument Serif', serif;
+      --mono: 'Geist Mono', ui-monospace, monospace; }
+      #unpacking-pipeline-dark-root { color: var(--ink); font-family: var(--sans); }
+      #unpacking-pipeline-dark-root .diagram-container { width: 100%; overflow-x: auto; }
+      #unpacking-pipeline-dark-root .step-number, #unpacking-pipeline-dark-root .step-label, #unpacking-pipeline-dark-root .lane-label, #unpacking-pipeline-dark-root .tag, #unpacking-pipeline-dark-root .chip-text, #unpacking-pipeline-dark-root .legend-label { font-family: var(--mono);
+      text-anchor: middle; }
+      #unpacking-pipeline-dark-root .step-number { fill: var(--ink); font-size: 8px; font-weight: 600; }
+      #unpacking-pipeline-dark-root .step-label { fill: var(--muted); font-size: 8px; font-weight: 500; letter-spacing: 0.12em; }
+      #unpacking-pipeline-dark-root .lane-label { fill: var(--muted); font-size: 9px; font-weight: 500; letter-spacing: 0.14em; }
+      #unpacking-pipeline-dark-root .tag { fill: var(--muted); font-size: 7px; font-weight: 600; }
+      #unpacking-pipeline-dark-root .node-name { fill: var(--ink); font: 600 12px var(--sans); text-anchor: middle; }
+      #unpacking-pipeline-dark-root .node-sub { fill: var(--muted); font: 400 9px var(--mono); text-anchor: middle; }
+      #unpacking-pipeline-dark-root .node-tool { fill: var(--soft); font: 400 9px var(--mono); text-anchor: middle; }
+      #unpacking-pipeline-dark-root .chip-text { fill: #1d2021; font-size: 7px; font-weight: 700; }
+      #unpacking-pipeline-dark-root .focal-text { fill: var(--accent); }
+      #unpacking-pipeline-dark-root .legend-label { fill: var(--muted); font-size: 8px; font-weight: 500; letter-spacing: 0.12em; text-anchor: end; }
+      #unpacking-pipeline-dark-root .legend-text { fill: var(--muted); font: 400 8px var(--sans); }
+      #unpacking-pipeline-dark-root .diagram-container { overflow-x: visible; }</style>
+          <marker id="unpacking-pipeline-dark-unpacking-pipeline-dark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#bdae93"/>
+          </marker>
+          <marker id="unpacking-pipeline-dark-unpacking-pipeline-dark-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#b8bb26"/>
+          </marker>
+        </defs>
+
+        <rect width="1280" height="620" fill="#1d2021"/>
+
+        <!-- Lane structure -->
+        <rect x="0" y="80" width="1280" height="140" fill="#ebdbb2" fill-opacity="0.025"/>
+        <rect x="0" y="360" width="1280" height="140" fill="#ebdbb2" fill-opacity="0.025"/>
+        <line x1="0" y1="80" x2="1280" y2="80" stroke="#ebdbb2" stroke-opacity="0.14" stroke-width="0.8"/>
+        <line x1="0" y1="220" x2="1280" y2="220" stroke="#ebdbb2" stroke-opacity="0.14" stroke-width="0.8"/>
+        <line x1="0" y1="360" x2="1280" y2="360" stroke="#ebdbb2" stroke-opacity="0.14" stroke-width="0.8"/>
+        <line x1="0" y1="500" x2="1280" y2="500" stroke="#ebdbb2" stroke-opacity="0.14" stroke-width="0.8"/>
+        <line x1="140" y1="80" x2="140" y2="500" stroke="#ebdbb2" stroke-opacity="0.22" stroke-width="1"/>
+
+        <!-- Step headers -->
+        <g aria-label="Recovery steps">
+          <rect x="224" y="20" width="32" height="18" rx="8" fill="#ebdbb2" fill-opacity="0.12"/>
+          <text x="240" y="32" class="step-number">01</text>
+          <text x="240" y="60" class="step-label">INPUT</text>
+
+          <rect x="404" y="20" width="32" height="18" rx="8" fill="#ebdbb2" fill-opacity="0.12"/>
+          <text x="420" y="32" class="step-number">02</text>
+          <text x="420" y="60" class="step-label">VERIFY</text>
+
+          <rect x="644" y="20" width="32" height="18" rx="8" fill="#b8bb26" fill-opacity="0.22"/>
+          <text x="660" y="32" class="step-number focal-text">03</text>
+          <text x="660" y="60" class="step-label focal-text">DECRYPT</text>
+
+          <rect x="844" y="20" width="32" height="18" rx="8" fill="#ebdbb2" fill-opacity="0.12"/>
+          <text x="860" y="32" class="step-number">04</text>
+          <text x="860" y="60" class="step-label">SYMBOLS</text>
+
+          <rect x="1064" y="20" width="32" height="18" rx="8" fill="#ebdbb2" fill-opacity="0.12"/>
+          <text x="1080" y="32" class="step-number">05</text>
+          <text x="1080" y="60" class="step-label">REVIEW</text>
+        </g>
+
+        <!-- Lane labels -->
+        <text x="70" y="146" class="lane-label">BUILD</text>
+        <text x="70" y="160" class="lane-label">INPUTS</text>
+        <text x="70" y="286" class="lane-label">OFFLINE</text>
+        <text x="70" y="300" class="lane-label">RECOVERY</text>
+        <text x="70" y="426" class="lane-label">STATIC</text>
+        <text x="70" y="440" class="lane-label">ANALYSIS</text>
+
+        <!-- Connectors before nodes -->
+        <path d="M330 150 H412 Q420 150 420 158 V234" fill="none" stroke="#bdae93" stroke-width="1.2" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow)"/>
+        <line x1="510" y1="290" x2="570" y2="290" stroke="#b8bb26" stroke-width="1.4" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow-accent)"/>
+        <line x1="660" y1="206" x2="660" y2="234" stroke="#bdae93" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow)"/>
+        <path d="M750 290 H852 Q860 290 860 298 V374" fill="none" stroke="#bdae93" stroke-width="1.2" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow)"/>
+        <line x1="950" y1="430" x2="990" y2="430" stroke="#bdae93" stroke-width="1.2" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow)"/>
+
+        <rect x="522" y="262" width="48" height="12" rx="2" fill="#1d2021"/>
+        <text x="546" y="271" fill="#b8bb26" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">MATCH</text>
+
+        <!-- Input: original -->
+        <rect x="150" y="94" width="180" height="112" rx="6" fill="#1d2021"/>
+        <rect x="150" y="94" width="180" height="112" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity="0.30" stroke-width="1"/>
+        <rect x="158" y="102" width="32" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity="0.32" stroke-width="0.8"/>
+        <text x="174" y="112" class="tag">IN</text>
+        <text x="240" y="140" class="node-name">Original ELF + profile</text>
+        <text x="240" y="160" class="node-sub">hashes · offsets · nonce</text>
+        <text x="240" y="178" class="node-tool">private exact-build input</text>
+        <rect x="302" y="188" width="22" height="12" rx="2" fill="#fe8019"/>
+        <text x="313" y="197" class="chip-text">FL</text>
+
+        <!-- Optional runtime oracle -->
+        <rect x="570" y="94" width="180" height="112" rx="6" fill="#1d2021"/>
+        <rect x="570" y="94" width="180" height="112" rx="6" fill="#ebdbb2" fill-opacity="0.025" stroke="#ebdbb2" stroke-opacity="0.24" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect x="578" y="102" width="32" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity="0.28" stroke-width="0.8"/>
+        <text x="594" y="112" class="tag">OPT</text>
+        <text x="660" y="140" class="node-name">Runtime image</text>
+        <text x="660" y="160" class="node-sub">optional byte oracle</text>
+        <text x="660" y="178" class="node-tool">verification only</text>
+        <rect x="722" y="188" width="22" height="12" rx="2" fill="#83a598"/>
+        <text x="733" y="197" class="chip-text">DB</text>
+
+        <!-- Hash gate -->
+        <rect x="330" y="234" width="180" height="112" rx="6" fill="#1d2021"/>
+        <rect x="330" y="234" width="180" height="112" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity="0.30" stroke-width="1"/>
+        <rect x="338" y="242" width="32" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity="0.32" stroke-width="0.8"/>
+        <text x="354" y="252" class="tag">REC</text>
+        <text x="420" y="280" class="node-name">Exact-build gate</text>
+        <text x="420" y="300" class="node-sub">input SHA-256 must match</text>
+        <text x="420" y="318" class="node-tool">fail closed on drift</text>
+        <rect x="338" y="328" width="22" height="12" rx="2" fill="#fe8019"/>
+        <text x="349" y="337" class="chip-text">FL</text>
+        <rect x="482" y="328" width="22" height="12" rx="2" fill="#83a598"/>
+        <text x="493" y="337" class="chip-text">DB</text>
+
+        <!-- Focal recovery -->
+        <rect x="570" y="234" width="180" height="112" rx="6" fill="#1d2021"/>
+        <rect x="570" y="234" width="180" height="112" rx="6" fill="#b8bb26" fill-opacity="0.12" stroke="#b8bb26" stroke-width="1.2"/>
+        <rect x="578" y="242" width="32" height="14" rx="2" fill="none" stroke="#b8bb26" stroke-opacity="0.58" stroke-width="0.8"/>
+        <text x="594" y="252" class="tag focal-text">REC</text>
+        <text x="660" y="280" class="node-name">Checksum + ChaCha8</text>
+        <text x="660" y="300" class="node-sub">Fletcher-64 → key → span</text>
+        <text x="660" y="318" class="node-tool">byte-exact plaintext</text>
+        <rect x="578" y="328" width="22" height="12" rx="2" fill="#83a598"/>
+        <text x="589" y="337" class="chip-text">DB</text>
+        <rect x="722" y="328" width="22" height="12" rx="2" fill="#83a598"/>
+        <text x="733" y="337" class="chip-text">DB</text>
+
+        <!-- Symbolizer -->
+        <rect x="770" y="374" width="180" height="112" rx="6" fill="#1d2021"/>
+        <rect x="770" y="374" width="180" height="112" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity="0.30" stroke-width="1"/>
+        <rect x="778" y="382" width="32" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity="0.32" stroke-width="0.8"/>
+        <text x="794" y="392" class="tag">ANA</text>
+        <text x="860" y="420" class="node-name">EH-frame symbolizer</text>
+        <text x="860" y="440" class="node-sub">FDE starts → STT_FUNC</text>
+        <text x="860" y="458" class="node-tool">analysis-only ELF</text>
+        <rect x="778" y="468" width="22" height="12" rx="2" fill="#83a598"/>
+        <text x="789" y="477" class="chip-text">DB</text>
+        <rect x="922" y="468" width="22" height="12" rx="2" fill="#fe8019"/>
+        <text x="933" y="477" class="chip-text">FL</text>
+
+        <!-- Binary Ninja -->
+        <rect x="990" y="374" width="180" height="112" rx="6" fill="#1d2021"/>
+        <rect x="990" y="374" width="180" height="112" rx="6" fill="#ebdbb2" fill-opacity="0.04" stroke="#ebdbb2" stroke-opacity="0.34" stroke-width="1"/>
+        <rect x="998" y="382" width="32" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity="0.32" stroke-width="0.8"/>
+        <text x="1014" y="392" class="tag">ANA</text>
+        <text x="1080" y="420" class="node-name">Binary Ninja review</text>
+        <text x="1080" y="440" class="node-sub">names · types · CFF graph</text>
+        <text x="1080" y="458" class="node-tool">side effects verified</text>
+        <rect x="998" y="468" width="22" height="12" rx="2" fill="#fe8019"/>
+        <text x="1009" y="477" class="chip-text">FL</text>
+
+        <!-- Compact legend -->
+        <line x1="40" y1="520" x2="1240" y2="520" stroke="#ebdbb2" stroke-opacity="0.14" stroke-width="0.8"/>
+
+        <text x="88" y="552" class="legend-label">DATA</text>
+        <rect x="120" y="542" width="22" height="12" rx="2" fill="#fe8019"/><text x="131" y="551" class="chip-text">FL</text><text x="152" y="552" class="legend-text">ELF / profile</text>
+        <rect x="268" y="542" width="22" height="12" rx="2" fill="#83a598"/><text x="279" y="551" class="chip-text">DB</text><text x="300" y="552" class="legend-text">Binary span</text>
+        <text x="420" y="552" class="legend-text">left chip = input · right chip = output</text>
+
+        <text x="88" y="586" class="legend-label">FLOW</text>
+        <line x1="120" y1="582" x2="152" y2="582" stroke="#bdae93" stroke-width="1.2" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow)"/><text x="164" y="586" class="legend-text">Standard</text>
+        <line x1="284" y1="582" x2="316" y2="582" stroke="#b8bb26" stroke-width="1.4" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow-accent)"/><text x="328" y="586" class="legend-text">Focal</text>
+        <line x1="424" y1="582" x2="456" y2="582" stroke="#bdae93" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#unpacking-pipeline-dark-unpacking-pipeline-dark-arrow)"/><text x="468" y="586" class="legend-text">Optional oracle</text>
+      </svg>

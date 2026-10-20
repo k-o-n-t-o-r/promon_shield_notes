@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "input_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "plaintext_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "checksum_virtual_address": "0x1000",
+  "checksum_length": "0x100",
+  "key_mask_virtual_address": "0x2000",
+  "protected_virtual_address": "0x3000",
+  "protected_length": "0x1000",
+  "nonce": "0000000000000000"
+}

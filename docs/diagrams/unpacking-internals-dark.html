@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHIELD main-region unpacking internals</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--paper:#1d2021;--paper-2:#282828;--ink:#ebdbb2;--muted:#bdae93;--soft:#a89984;--accent:#b8bb26;--link:#83a598;--sans:'Geist',system-ui,sans-serif;--serif:'Instrument Serif',serif;--mono:'Geist Mono',ui-monospace,monospace}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:3rem 2rem;background:var(--paper);color:var(--ink);font-family:var(--sans)}
+    .frame{width:100%;max-width:1280px;min-width:0}.diagram-container{width:100%;overflow-x:auto}
+    .eyebrow{margin-bottom:.5rem;color:var(--muted);font:500 .66rem var(--mono);letter-spacing:.18em;text-transform:uppercase}
+    h1{margin-bottom:1.5rem;color:var(--ink);font:400 clamp(1.5rem,2.4vw + .75rem,2rem)/1.15 var(--serif);letter-spacing:-.02em}
+    svg{display:block;width:100%;min-width:1280px}.step,.lane,.tag,.edge,.legend-label{font-family:var(--mono);text-anchor:middle}.step{fill:var(--muted);font-size:8px;font-weight:500;letter-spacing:.12em}.lane{fill:var(--muted);font-size:9px;font-weight:500;letter-spacing:.14em}.tag{fill:var(--muted);font-size:7px;font-weight:600}
+    .name{fill:var(--ink);font:600 11px var(--sans);text-anchor:middle}.sub{fill:var(--muted);font:400 8px var(--mono);text-anchor:middle}.edge{fill:var(--soft);font-size:8px;letter-spacing:.04em}.legend-label{fill:var(--muted);font-size:8px;font-weight:500;letter-spacing:.16em;text-anchor:start}.legend-text{fill:var(--muted);font:400 9px var(--sans)}
+    @media print{.diagram-container{overflow-x:visible}svg{min-width:0}}
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Data flow · Unpacking internals</p>
+    <h1>Checksum-derived key material activates the protected region</h1>
+    <div class="diagram-container">
+      <svg viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="unpacking-internals-dark-title unpacking-internals-dark-desc">
+        <title id="unpacking-internals-dark-title">SHIELD main-region unpacking internals</title>
+        <desc id="unpacking-internals-dark-desc">Data flow showing loader bytes entering Fletcher-64 and checksum encoding, a descriptor mask producing the ChaCha8 key, nonce and region metadata selecting in-place decryption, and cache maintenance restoring executable pages.</desc>
+        <defs>
+          <marker id="unpacking-internals-dark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#bdae93"/></marker>
+          <marker id="unpacking-internals-dark-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#b8bb26"/></marker>
+        </defs>
+        <rect width="1280" height="640" fill="#1d2021"/>
+        <g transform="translate(0,-40)">
+
+        <!-- Header and lanes -->
+        <rect x="0" y="100" width="1280" height="160" fill="rgba(235,219,178,.025)"/>
+        <rect x="0" y="420" width="1280" height="160" fill="rgba(235,219,178,.025)"/>
+        <line x1="0" y1="100" x2="1280" y2="100" stroke="rgba(235,219,178,.14)"/>
+        <line x1="0" y1="260" x2="1280" y2="260" stroke="rgba(235,219,178,.14)"/>
+        <line x1="0" y1="420" x2="1280" y2="420" stroke="rgba(235,219,178,.14)"/>
+        <line x1="0" y1="580" x2="1280" y2="580" stroke="rgba(235,219,178,.14)"/>
+        <line x1="112" y1="100" x2="112" y2="580" stroke="rgba(235,219,178,.22)"/>
+
+        <text x="56" y="176" class="lane">LOADER</text><text x="56" y="190" class="lane">INPUTS</text>
+        <text x="56" y="336" class="lane">KEY</text><text x="56" y="350" class="lane">DERIVATION</text>
+        <text x="56" y="496" class="lane">MEMORY</text><text x="56" y="510" class="lane">ACTIVATION</text>
+
+        <g aria-label="Unpacking steps">
+          <text x="224" y="64" class="step">01 · CHECKSUM</text>
+          <text x="400" y="64" class="step">02 · SUM</text>
+          <text x="576" y="64" class="step">03 · ENCODE</text>
+          <text x="752" y="64" class="step">04 · KEY</text>
+          <text x="960" y="64" class="step" fill="#b8bb26">05 · ACTIVATE</text>
+          <text x="1168" y="64" class="step">06 · CODE</text>
+        </g>
+
+        <!-- Connectors first -->
+        <path d="M312 176 H392 Q400 176 400 184 V280" fill="none" stroke="#bdae93" marker-end="url(#unpacking-internals-dark-arrow)"/>
+        <line x1="464" y1="328" x2="512" y2="328" stroke="#bdae93" marker-end="url(#unpacking-internals-dark-arrow)"/>
+        <line x1="640" y1="328" x2="688" y2="328" stroke="#bdae93" marker-end="url(#unpacking-internals-dark-arrow)"/>
+        <line x1="752" y1="232" x2="752" y2="280" stroke="#bdae93" marker-end="url(#unpacking-internals-dark-arrow)"/>
+        <path d="M840 192 H872 Q880 192 880 200 V416 Q880 424 872 424 H848 Q840 424 840 432 V440" fill="none" stroke="#bdae93" stroke-dasharray="5,4" marker-end="url(#unpacking-internals-dark-arrow)"/>
+        <line x1="760" y1="376" x2="760" y2="440" stroke="#b8bb26" stroke-width="1.3" marker-end="url(#unpacking-internals-dark-arrow-accent)"/>
+        <line x1="856" y1="496" x2="904" y2="496" stroke="#b8bb26" stroke-width="1.3" marker-end="url(#unpacking-internals-dark-arrow-accent)"/>
+        <line x1="1048" y1="496" x2="1096" y2="496" stroke="#bdae93" marker-end="url(#unpacking-internals-dark-arrow)"/>
+
+        <!-- Edge labels -->
+        <rect x="320" y="156" width="64" height="12" rx="2" fill="#1d2021"/><text x="352" y="165" class="edge">WORDS</text>
+        <rect x="468" y="300" width="40" height="12" rx="2" fill="#1d2021"/><text x="488" y="309" class="edge">64-BIT</text>
+        <rect x="648" y="300" width="32" height="12" rx="2" fill="#1d2021"/><text x="664" y="309" class="edge">32 B</text>
+        <rect x="768" y="244" width="48" height="12" rx="2" fill="#1d2021"/><text x="792" y="253" class="edge">MASK</text>
+        <rect x="888" y="300" width="72" height="12" rx="2" fill="#1d2021"/><text x="924" y="309" class="edge">NONCE · SPAN</text>
+        <rect x="704" y="396" width="48" height="12" rx="2" fill="#1d2021"/><text x="728" y="405" class="edge" fill="#b8bb26">KEY</text>
+        <rect x="862" y="468" width="36" height="12" rx="2" fill="#1d2021"/><text x="880" y="477" class="edge" fill="#b8bb26">PLAIN</text>
+        <rect x="1056" y="468" width="32" height="12" rx="2" fill="#1d2021"/><text x="1072" y="477" class="edge">RX</text>
+
+        <!-- Input nodes -->
+        <rect x="136" y="120" width="176" height="112" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/>
+        <rect x="144" y="128" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="162" y="138" class="tag">ELF</text>
+        <text x="224" y="166" class="name">Loader checksum span</text><text x="224" y="188" class="sub">unprotected code words</text><text x="224" y="210" class="sub">build-bound input</text>
+
+        <rect x="664" y="120" width="176" height="112" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/>
+        <rect x="672" y="128" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="690" y="138" class="tag">DESC</text>
+        <text x="752" y="166" class="name">Region descriptor</text><text x="752" y="188" class="sub">back offset · length</text><text x="752" y="210" class="sub">key mask · nonce</text>
+
+        <!-- Key derivation -->
+        <rect x="336" y="280" width="128" height="96" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/>
+        <rect x="344" y="288" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="362" y="298" class="tag">SUM</text>
+        <text x="400" y="320" class="name">Fletcher-64</text><text x="400" y="340" class="sub">sum1 · sum2</text><text x="400" y="358" class="sub">mod 0xffffffff</text>
+
+        <rect x="512" y="280" width="128" height="96" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/>
+        <rect x="520" y="288" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="538" y="298" class="tag">ENC</text>
+        <text x="576" y="320" class="name">Checksum encoder</text><text x="576" y="340" class="sub">selected bits + markers</text><text x="576" y="358" class="sub">16-byte block ×2</text>
+
+        <rect x="688" y="280" width="128" height="96" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/>
+        <rect x="696" y="288" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="714" y="298" class="tag">XOR</text>
+        <text x="752" y="320" class="name">Descriptor key</text><text x="752" y="340" class="sub">encoded checksum</text><text x="752" y="358" class="sub">XOR 32-byte mask</text>
+
+        <!-- Activation -->
+        <rect x="712" y="440" width="144" height="112" rx="6" fill="rgba(184,187,38,.12)" stroke="#b8bb26" stroke-width="1.2"/>
+        <rect x="720" y="448" width="36" height="14" rx="2" fill="none" stroke="rgba(184,187,38,.60)"/><text x="738" y="458" class="tag" fill="#b8bb26">C8</text>
+        <text x="784" y="486" class="name">In-place ChaCha8</text><text x="784" y="508" class="sub">RWX page span</text><text x="784" y="530" class="sub">64-bit counter + nonce</text>
+
+        <rect x="904" y="440" width="144" height="112" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/>
+        <rect x="912" y="448" width="36" height="14" rx="2" fill="none" stroke="rgba(235,219,178,.32)"/><text x="930" y="458" class="tag">SYNC</text>
+        <text x="976" y="486" class="name">Cache maintenance</text><text x="976" y="508" class="sub">dc cvau · dsb · ic ivau</text><text x="976" y="530" class="sub">restore PROT_RX</text>
+
+        <rect x="1096" y="440" width="144" height="112" rx="6" fill="rgba(131,165,152,.07)" stroke="#83a598"/>
+        <rect x="1104" y="448" width="36" height="14" rx="2" fill="none" stroke="rgba(131,165,152,.55)"/><text x="1122" y="458" class="tag" fill="#83a598">CODE</text>
+        <text x="1168" y="486" class="name">Recovered region</text><text x="1168" y="508" class="sub">executable instructions</text><text x="1168" y="530" class="sub">deterministic per build</text>
+
+        <line x1="40" y1="602" x2="1240" y2="602" stroke="rgba(235,219,178,.14)"/>
+        <text x="40" y="628" class="legend-label">INVARIANTS</text>
+        <text x="160" y="628" class="legend-text">Input hash binds the profile</text>
+        <text x="424" y="628" class="legend-text">Loader mutation changes the derived key</text>
+        <text x="760" y="628" class="legend-text">Descriptor table ends at the zero sentinel</text>
+        <text x="1080" y="628" class="legend-text">Runtime image verifies bytes only</text>
+        </g>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

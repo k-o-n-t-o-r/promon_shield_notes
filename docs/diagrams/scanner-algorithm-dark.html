@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHIELD live-vs-file scanner decision flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--paper:#1d2021;--paper-2:#282828;--ink:#ebdbb2;--muted:#bdae93;--soft:#a89984;--accent:#b8bb26;--sans:'Geist',system-ui,sans-serif;--serif:'Instrument Serif',serif;--mono:'Geist Mono',ui-monospace,monospace}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:3rem 2rem;background:var(--paper);color:var(--ink);font-family:var(--sans)}
+    .frame{width:100%;max-width:880px;min-width:0}.diagram-container{width:100%;overflow-x:auto}
+    .eyebrow{margin-bottom:.5rem;color:var(--muted);font:500 .66rem var(--mono);letter-spacing:.18em;text-transform:uppercase}
+    h1{margin-bottom:1.5rem;color:var(--ink);font:400 clamp(1.5rem,2.4vw + .75rem,2rem)/1.15 var(--serif);letter-spacing:-.02em}
+    svg{display:block;width:100%;min-width:880px}.name{fill:var(--ink);font:600 12px var(--sans);text-anchor:middle}.sub{fill:var(--muted);font:400 9px var(--mono);text-anchor:middle}.branch{fill:var(--soft);font:500 8px var(--mono);letter-spacing:.1em;text-anchor:middle}
+    .legend-label{fill:var(--muted);font:500 8px var(--mono);letter-spacing:.16em}.legend-text{fill:var(--muted);font:400 9px var(--sans)}
+    @media print{.diagram-container{overflow-x:visible}svg{min-width:0}}
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Flowchart · Integrity primitive</p>
+    <h1>The scanner fails closed before comparing live code</h1>
+    <div class="diagram-container">
+      <svg viewBox="0 0 880 700" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="scanner-algorithm-dark-title scanner-algorithm-dark-desc">
+        <title id="scanner-algorithm-dark-title">SHIELD live-vs-file scanner decision flow</title>
+        <desc id="scanner-algorithm-dark-desc">Flowchart showing argument validation, exact seek and read, optional page-span protection, byte comparison, tagged mismatch output, and the shared fail-closed error result.</desc>
+        <defs>
+          <marker id="scanner-algorithm-dark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#bdae93"/></marker>
+          <marker id="scanner-algorithm-dark-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#b8bb26"/></marker>
+        </defs>
+        <rect width="880" height="700" fill="#1d2021"/>
+
+        <!-- Connectors first -->
+        <line x1="520" y1="80" x2="520" y2="96" stroke="#bdae93" marker-end="url(#scanner-algorithm-dark-arrow)"/>
+        <line x1="520" y1="176" x2="520" y2="212" stroke="#bdae93" marker-end="url(#scanner-algorithm-dark-arrow)"/>
+        <line x1="520" y1="292" x2="520" y2="328" stroke="#bdae93" marker-end="url(#scanner-algorithm-dark-arrow)"/>
+
+        <path d="M400 136 H128 Q120 136 120 144 V456" fill="none" stroke="#fb4934" stroke-width="1.1" marker-end="url(#scanner-algorithm-dark-arrow)"/>
+        <path d="M400 252 H188 Q180 252 180 260 V456" fill="none" stroke="#fb4934" stroke-width="1.1" marker-end="url(#scanner-algorithm-dark-arrow)"/>
+
+        <path d="M400 368 H412 Q420 368 420 376 V456" fill="none" stroke="#bdae93" marker-end="url(#scanner-algorithm-dark-arrow)"/>
+        <path d="M640 368 H692 Q700 368 700 376 V456" fill="none" stroke="#b8bb26" stroke-width="1.3" marker-end="url(#scanner-algorithm-dark-arrow-accent)"/>
+        <line x1="520" y1="488" x2="600" y2="488" stroke="#b8bb26" stroke-width="1.3" marker-end="url(#scanner-algorithm-dark-arrow-accent)"/>
+        <path d="M380 520 V544 Q380 552 372 552 H164 Q156 552 156 544 V520" fill="none" stroke="#fb4934" stroke-width="1.1" marker-end="url(#scanner-algorithm-dark-arrow)"/>
+        <line x1="700" y1="520" x2="700" y2="568" stroke="#b8bb26" stroke-width="1.3" marker-end="url(#scanner-algorithm-dark-arrow-accent)"/>
+
+        <!-- Branch labels -->
+        <rect x="536" y="184" width="32" height="12" rx="2" fill="#1d2021"/><text x="552" y="193" class="branch">VALID</text>
+        <rect x="536" y="300" width="32" height="12" rx="2" fill="#1d2021"/><text x="552" y="309" class="branch">EXACT</text>
+        <rect x="240" y="116" width="48" height="12" rx="2" fill="#1d2021"/><text x="264" y="125" class="branch" fill="#fb4934">INVALID</text>
+        <rect x="260" y="232" width="40" height="12" rx="2" fill="#1d2021"/><text x="280" y="241" class="branch" fill="#fb4934">SHORT</text>
+        <rect x="380" y="388" width="32" height="12" rx="2" fill="#1d2021"/><text x="396" y="397" class="branch">YES</text>
+        <rect x="708" y="388" width="32" height="12" rx="2" fill="#1d2021"/><text x="724" y="397" class="branch" fill="#b8bb26">NO</text>
+        <rect x="548" y="468" width="40" height="12" rx="2" fill="#1d2021"/><text x="568" y="477" class="branch" fill="#b8bb26">RX OK</text>
+        <rect x="708" y="536" width="64" height="12" rx="2" fill="#1d2021"/><text x="740" y="545" class="branch" fill="#b8bb26">MISMATCH BIT</text>
+        <rect x="240" y="532" width="48" height="12" rx="2" fill="#1d2021"/><text x="264" y="541" class="branch" fill="#fb4934">RX FAIL</text>
+
+        <!-- Nodes -->
+        <rect x="440" y="32" width="160" height="48" rx="20" fill="rgba(235,219,178,.035)" stroke="rgba(235,219,178,.30)"/>
+        <text x="520" y="60" class="name">Scan request</text>
+
+        <polygon points="520,96 640,136 520,176 400,136" fill="#282828" stroke="rgba(235,219,178,.40)"/>
+        <text x="520" y="132" class="name">Arguments valid?</text><text x="520" y="150" class="sub">fd · offset · length ≤ page</text>
+
+        <polygon points="520,212 640,252 520,292 400,252" fill="#282828" stroke="rgba(235,219,178,.40)"/>
+        <text x="520" y="248" class="name">Exact seek + read?</text><text x="520" y="266" class="sub">requested bytes returned</text>
+
+        <polygon points="520,328 640,368 520,408 400,368" fill="#282828" stroke="rgba(235,219,178,.40)"/>
+        <text x="520" y="358" class="name">force_rx set?</text><text x="520" y="378" class="sub">normalize live page span</text>
+
+        <rect x="320" y="456" width="200" height="64" rx="6" fill="#282828" stroke="rgba(235,219,178,.34)"/>
+        <text x="420" y="484" class="name">Build page span</text><text x="420" y="504" class="sub">align · mprotect(PROT_RX)</text>
+
+        <rect x="600" y="456" width="200" height="64" rx="6" fill="rgba(184,187,38,.10)" stroke="#b8bb26"/>
+        <text x="700" y="484" class="name">Compare live bytes</text><text x="700" y="504" class="sub">private qword/byte bcmp</text>
+
+        <rect x="600" y="568" width="200" height="56" rx="20" fill="rgba(184,187,38,.10)" stroke="#b8bb26"/>
+        <text x="700" y="594" class="name">Tagged scan result</text><text x="700" y="612" class="sub">tag · mismatch · initialized</text>
+
+        <rect x="80" y="456" width="152" height="64" rx="20" fill="rgba(251,73,52,.07)" stroke="rgba(251,73,52,.70)"/>
+        <text x="156" y="484" class="name">Error result</text><text x="156" y="504" class="sub">fail closed</text>
+
+        <!-- Legend -->
+        <line x1="40" y1="656" x2="840" y2="656" stroke="rgba(235,219,178,.14)"/>
+        <text x="40" y="680" class="legend-label">LEGEND</text>
+        <polygon points="152,674 166,667 180,674 166,681" fill="#282828" stroke="rgba(235,219,178,.40)"/><text x="192" y="678" class="legend-text">Decision</text>
+        <rect x="300" y="667" width="28" height="14" rx="3" fill="#282828" stroke="rgba(235,219,178,.34)"/><text x="340" y="678" class="legend-text">Action</text>
+        <rect x="448" y="667" width="28" height="14" rx="7" fill="rgba(184,187,38,.10)" stroke="#b8bb26"/><text x="488" y="678" class="legend-text">Tagged success</text>
+        <rect x="624" y="667" width="28" height="14" rx="7" fill="rgba(251,73,52,.07)" stroke="rgba(251,73,52,.70)"/><text x="664" y="678" class="legend-text">Shared error</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

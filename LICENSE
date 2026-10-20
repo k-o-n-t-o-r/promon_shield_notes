@@ -1,0 +1,15 @@
+Copyright (c) 2026 The authors
+
+All rights reserved.
+
+No permission is granted to copy, modify, distribute, sublicense, or sell this
+repository's code or documentation without prior written permission from the
+copyright holders.
+
+Use is limited to software and devices you own or are explicitly authorized to
+test. This notice does not grant permission to access, modify, or inspect any
+third-party system.
+
+The file binaryninja/mikucffhelper-bn6.patch contains changes against the
+MIT-licensed MikuCffHelper project. Upstream portions and derivative changes in
+that patch remain subject to the upstream project's MIT license.

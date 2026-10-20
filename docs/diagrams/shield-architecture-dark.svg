@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="shield-architecture-dark-title shield-architecture-dark-desc" id="shield-architecture-dark-root">
+        <title id="shield-architecture-dark-title">Promon SHIELD internal architecture</title>
+        <desc id="shield-architecture-dark-desc">Internal architecture showing Java startup, native unpacking, address and code integrity evidence, concurrent detector workers, protected-service poisoning, Java reporting, and self-tracer enforcement.</desc>
+        <defs>
+      <style>#shield-architecture-dark-root { --paper:#1d2021; --paper-2:#282828; --ink:#ebdbb2; --muted:#bdae93;
+      --soft:#a89984; --accent:#b8bb26; --accent-tint:rgba(184,187,38,.12);
+      --link:#83a598; --rule:rgba(235,219,178,.14);
+      --sans:'Geist',system-ui,sans-serif; --serif:'Instrument Serif',serif;
+      --mono:'Geist Mono',ui-monospace,monospace; }
+      #shield-architecture-dark-root { color: var(--ink); font-family: var(--sans); }
+      #shield-architecture-dark-root .diagram-container { width:100%; overflow-x:auto; }
+      #shield-architecture-dark-root .zone { fill:var(--soft); font:500 8px var(--mono); letter-spacing:.14em; text-anchor:middle; }
+      #shield-architecture-dark-root .tag { fill:var(--muted); font:500 8px var(--mono); letter-spacing:.08em; text-anchor:middle; }
+      #shield-architecture-dark-root .name { fill:var(--ink); font:600 12px var(--sans); text-anchor:middle; }
+      #shield-architecture-dark-root .sub { fill:var(--muted); font:400 9px var(--mono); text-anchor:middle; }
+      #shield-architecture-dark-root .edge { fill:var(--soft); font:400 8px var(--mono); letter-spacing:.06em; text-anchor:middle; }
+      #shield-architecture-dark-root .legend-label { fill:var(--muted); font:500 8px var(--mono); letter-spacing:.16em; }
+      #shield-architecture-dark-root .legend-text { fill:var(--muted); font:400 9px var(--sans); }
+      #shield-architecture-dark-root .diagram-container { overflow-x:visible; }</style>
+          <marker id="shield-architecture-dark-shield-architecture-dark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#bdae93"/></marker>
+          <marker id="shield-architecture-dark-shield-architecture-dark-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#b8bb26"/></marker>
+          <marker id="shield-architecture-dark-shield-architecture-dark-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#83a598"/></marker>
+        </defs>
+        <rect width="1280" height="720" fill="#1d2021"/>
+
+        <!-- Trust and process zones -->
+        <rect x="40" y="80" width="240" height="520" rx="8" fill="#ebdbb2" fill-opacity=".02" stroke="#ebdbb2" stroke-opacity=".14"/>
+        <rect x="320" y="80" width="640" height="520" rx="8" fill="#b8bb26" fill-opacity=".018" stroke="#b8bb26" stroke-opacity=".20"/>
+        <rect x="1000" y="80" width="240" height="520" rx="8" fill="#83a598" fill-opacity=".025" stroke="#83a598" stroke-opacity=".28"/>
+        <rect x="100" y="84" width="120" height="16" rx="2" fill="#1d2021"/><text x="160" y="96" class="zone">JAVA RUNTIME</text>
+        <rect x="548" y="84" width="184" height="16" rx="2" fill="#1d2021"/><text x="640" y="96" class="zone">NATIVE SHIELD CORE</text>
+        <rect x="1052" y="84" width="136" height="16" rx="2" fill="#1d2021"/><text x="1120" y="96" class="zone">TRACER PROCESS</text>
+
+        <!-- Connectors before nodes -->
+        <line x1="250" y1="176" x2="360" y2="176" stroke="#bdae93" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow)"/>
+        <line x1="580" y1="176" x2="700" y2="176" stroke="#b8bb26" stroke-width="1.4" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow-accent)"/>
+        <line x1="470" y1="212" x2="470" y2="300" stroke="#bdae93" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow)"/>
+        <line x1="810" y1="212" x2="810" y2="300" stroke="#bdae93" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow)"/>
+        <path d="M520 380 V412 Q520 420 528 420 H592 Q600 420 600 428 V460" fill="none" stroke="#bdae93" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow)"/>
+        <path d="M760 380 V412 Q760 420 752 420 H688 Q680 420 680 428 V460" fill="none" stroke="#bdae93" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow)"/>
+        <path d="M520 488 H300 Q292 488 292 480 V444 Q292 436 284 436 H250" fill="none" stroke="#b8bb26" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow-accent)"/>
+        <path d="M520 524 H300 Q292 524 292 532 V544 Q292 552 284 552 H250" fill="none" stroke="#bdae93" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow)"/>
+        <line x1="760" y1="500" x2="1020" y2="500" stroke="#83a598" stroke-width="1.2" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow-link)"/>
+
+        <!-- Edge labels -->
+        <rect x="280" y="188" width="48" height="12" rx="2" fill="#1d2021"/><text x="304" y="197" class="edge">LOAD</text>
+        <rect x="612" y="188" width="56" height="12" rx="2" fill="#1d2021"/><text x="640" y="197" class="edge" fill="#b8bb26">UNPACK</text>
+        <rect x="486" y="248" width="72" height="12" rx="2" fill="#1d2021"/><text x="522" y="257" class="edge">API VIEW</text>
+        <rect x="826" y="248" width="80" height="12" rx="2" fill="#1d2021"/><text x="866" y="257" class="edge">CODE VIEW</text>
+        <rect x="528" y="396" width="64" height="12" rx="2" fill="#1d2021"/><text x="560" y="405" class="edge">EVIDENCE</text>
+        <rect x="688" y="396" width="64" height="12" rx="2" fill="#1d2021"/><text x="720" y="405" class="edge">MISMATCH</text>
+        <rect x="360" y="468" width="56" height="12" rx="2" fill="#1d2021"/><text x="388" y="477" class="edge" fill="#b8bb26">POISON</text>
+        <rect x="360" y="536" width="56" height="12" rx="2" fill="#1d2021"/><text x="388" y="545" class="edge">REPORT</text>
+        <rect x="864" y="512" width="72" height="12" rx="2" fill="#1d2021"/><text x="900" y="521" class="edge" fill="#83a598">ENFORCE</text>
+
+        <!-- Java nodes -->
+        <rect x="70" y="140" width="180" height="72" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity=".36"/>
+        <rect x="78" y="148" width="40" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity=".32"/><text x="98" y="158" class="tag">JAVA</text>
+        <text x="160" y="180" class="name">Java bootstrap</text><text x="160" y="198" class="sub">attachBaseContext · native load</text>
+
+        <rect x="70" y="400" width="180" height="72" rx="6" fill="#282828" stroke="#b8bb26" stroke-opacity=".45"/>
+        <rect x="78" y="408" width="36" height="14" rx="2" fill="none" stroke="#b8bb26" stroke-opacity=".48"/><text x="96" y="418" class="tag" fill="#b8bb26">SVC</text>
+        <text x="160" y="440" class="name">Protected services</text><text x="160" y="458" class="sub">strings · keys · startup gate</text>
+
+        <rect x="70" y="520" width="180" height="64" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity=".30"/>
+        <rect x="78" y="528" width="36" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity=".30"/><text x="96" y="538" class="tag">RPT</text>
+        <text x="160" y="558" class="name">Java reporter</text><text x="160" y="576" class="sub">reason · fatal handler</text>
+
+        <!-- Native nodes -->
+        <rect x="360" y="140" width="220" height="72" rx="6" fill="#b8bb26" fill-opacity=".12" stroke="#b8bb26" stroke-width="1.2"/>
+        <rect x="368" y="148" width="44" height="14" rx="2" fill="none" stroke="#b8bb26" stroke-opacity=".60"/><text x="390" y="158" class="tag" fill="#b8bb26">CORE</text>
+        <text x="470" y="180" class="name">Initialization core</text><text x="470" y="198" class="sub">loader · checks · worker barrier</text>
+
+        <rect x="700" y="140" width="220" height="72" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity=".36"/>
+        <rect x="708" y="148" width="44" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity=".34"/><text x="730" y="158" class="tag">CRYPT</text>
+        <text x="810" y="180" class="name">Main-region unpacker</text><text x="810" y="198" class="sub">checksum · key · ChaCha8</text>
+
+        <rect x="360" y="300" width="220" height="80" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity=".30"/>
+        <rect x="368" y="308" width="36" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity=".30"/><text x="386" y="318" class="tag">ADDR</text>
+        <text x="470" y="340" class="name">Address-oracle collector</text><text x="470" y="358" class="sub">maps · dlsym · dladdr · phdr</text><text x="470" y="372" class="sub">relocations · object ownership</text>
+
+        <rect x="700" y="300" width="220" height="80" rx="6" fill="#282828" stroke="#ebdbb2" stroke-opacity=".30"/>
+        <rect x="708" y="308" width="36" height="14" rx="2" fill="none" stroke="#ebdbb2" stroke-opacity=".30"/><text x="726" y="318" class="tag">SCAN</text>
+        <text x="810" y="340" class="name">Live-vs-file scanner</text><text x="810" y="358" class="sub">seek · read · force RX</text><text x="810" y="372" class="sub">overlapping byte windows</text>
+
+        <rect x="520" y="460" width="240" height="80" rx="6" fill="#b8bb26" fill-opacity=".10" stroke="#b8bb26" stroke-width="1.2"/>
+        <rect x="528" y="468" width="36" height="14" rx="2" fill="none" stroke="#b8bb26" stroke-opacity=".60"/><text x="546" y="478" class="tag" fill="#b8bb26">DET</text>
+        <text x="640" y="500" class="name">Concurrent detector workers</text><text x="640" y="518" class="sub">correlate evidence · first verdict wins</text><text x="640" y="532" class="sub">release or poison initialization</text>
+
+        <!-- Tracer -->
+        <rect x="1020" y="460" width="200" height="80" rx="6" fill="#83a598" fill-opacity=".07" stroke="#83a598"/>
+        <rect x="1028" y="468" width="36" height="14" rx="2" fill="none" stroke="#83a598" stroke-opacity=".55"/><text x="1046" y="478" class="tag" fill="#83a598">TRC</text>
+        <text x="1120" y="500" class="name">Self-tracer child</text><text x="1120" y="518" class="sub">waitpid · ptrace dispatch</text><text x="1120" y="532" class="sub">raw kill · exit_group</text>
+
+        <!-- Legend -->
+        <line x1="40" y1="640" x2="1240" y2="640" stroke="#ebdbb2" stroke-opacity=".14"/>
+        <text x="40" y="662" class="legend-label">LEGEND</text>
+        <rect x="136" y="650" width="18" height="12" rx="2" fill="#b8bb26" fill-opacity=".12" stroke="#b8bb26"/><text x="164" y="660" class="legend-text">Coordination / verdict</text>
+        <rect x="352" y="650" width="18" height="12" rx="2" fill="#282828" stroke="#ebdbb2" stroke-opacity=".36"/><text x="380" y="660" class="legend-text">Internal service</text>
+        <line x1="540" y1="656" x2="572" y2="656" stroke="#bdae93" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow)"/><text x="584" y="660" class="legend-text">Control / evidence</text>
+        <line x1="760" y1="656" x2="792" y2="656" stroke="#83a598" marker-end="url(#shield-architecture-dark-shield-architecture-dark-arrow-link)"/><text x="804" y="660" class="legend-text">Tracer enforcement</text>
+        <rect x="1004" y="648" width="116" height="20" rx="4" fill="none" stroke="#ebdbb2" stroke-opacity=".18" stroke-dasharray="4,4"/><text x="1062" y="662" class="legend-text" text-anchor="middle">Process zone</text>
+      </svg>
